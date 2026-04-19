@@ -1,0 +1,241 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>Translation Tool — CodeAlpha</title>
+<link href="https://fonts.googleapis.com/css2?family=Syne:wght@700;800&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet"/>
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+body{min-height:100vh;background:#0a0a0f;color:#e8e8e0;font-family:'DM Mono',monospace;padding:20px 16px}
+.badge{display:inline-block;font-size:10px;letter-spacing:.18em;text-transform:uppercase;color:#00e696;border:1px solid rgba(0,230,150,.3);padding:4px 12px;border-radius:2px;margin-bottom:12px}
+h1{font-family:'Syne',sans-serif;font-size:34px;font-weight:800;line-height:1;color:#f0f0e8;margin-bottom:5px}
+h1 span{color:#00e696}
+.sub{font-size:11px;color:rgba(255,255,255,.3);margin-bottom:24px}
+.controls{display:flex;align-items:center;gap:8px;margin-bottom:14px}
+select{flex:1;background:#111118;border:1px solid rgba(255,255,255,.12);color:#e8e8e0;font-family:'DM Mono',monospace;font-size:12px;padding:9px 10px;border-radius:4px;outline:none;appearance:none;-webkit-appearance:none}
+select option{background:#111118}
+.swap{width:38px;height:38px;background:rgba(0,230,150,.08);border:1px solid rgba(0,230,150,.3);border-radius:4px;color:#00e696;cursor:pointer;font-size:16px;flex-shrink:0}
+.panel{background:#111118;border:1px solid rgba(255,255,255,.08);border-radius:6px;margin-bottom:10px;overflow:hidden}
+.ph{display:flex;justify-content:space-between;align-items:center;padding:8px 14px;border-bottom:1px solid rgba(255,255,255,.06);font-size:10px;letter-spacing:.15em;text-transform:uppercase;color:rgba(255,255,255,.28)}
+textarea{width:100%;min-height:140px;background:transparent;border:none;color:#e8e8e0;font-family:'DM Mono',monospace;font-size:14px;line-height:1.7;padding:14px;resize:vertical;outline:none}
+textarea::placeholder{color:rgba(255,255,255,.18)}
+#output{min-height:140px;padding:14px;font-size:14px;line-height:1.7;white-space:pre-wrap;word-break:break-word;color:rgba(255,255,255,.2);font-style:italic}
+#output.filled{color:#e8e8e0;font-style:normal}
+.copy-btn{background:transparent;border:1px solid rgba(0,230,150,.3);color:#00e696;font-family:'DM Mono',monospace;font-size:10px;padding:3px 9px;border-radius:3px;cursor:pointer}
+.actions{display:flex;gap:8px;align-items:center;margin-top:6px}
+.chars{flex:1;font-size:11px;color:rgba(255,255,255,.22)}
+.btn{font-family:'DM Mono',monospace;font-size:11px;letter-spacing:.1em;text-transform:uppercase;padding:10px 18px;border-radius:3px;cursor:pointer;border:none}
+.btn-p{background:#00e696;color:#0a0a0f;font-weight:700}
+.btn-p:disabled{opacity:.35;cursor:not-allowed}
+.btn-g{background:transparent;color:rgba(255,255,255,.4);border:1px solid rgba(255,255,255,.1)}
+#statusBox{margin-top:10px;padding:10px 14px;border-radius:4px;font-size:12px;line-height:1.5;display:none}
+#statusBox.ok{background:rgba(0,230,150,.06);border:1px solid rgba(0,230,150,.2);color:#00e696;display:block}
+#statusBox.err{background:rgba(255,80,80,.06);border:1px solid rgba(255,80,80,.2);color:#ff6b6b;display:block}
+.dots{padding:14px;display:flex;gap:4px;align-items:center}
+.dots span{width:6px;height:6px;border-radius:50%;background:#00e696;animation:bb 1.1s infinite}
+.dots span:nth-child(2){animation-delay:.2s}
+.dots span:nth-child(3){animation-delay:.4s}
+@keyframes bb{0%,80%,100%{opacity:.25;transform:scale(.8)}40%{opacity:1;transform:scale(1.1)}}
+.divider{height:1px;background:rgba(255,255,255,.06);margin:20px 0}
+footer{font-size:10px;color:rgba(255,255,255,.15);text-align:center;letter-spacing:.1em;text-transform:uppercase}
+.toast{position:fixed;bottom:20px;right:14px;background:#00e696;color:#0a0a0f;font-family:'DM Mono',monospace;font-size:11px;font-weight:700;padding:9px 16px;border-radius:4px;z-index:999;text-transform:uppercase;opacity:0;transition:opacity .25s;pointer-events:none}
+.toast.show{opacity:1}
+</style>
+</head>
+<body>
+
+<div class="badge">CodeAlpha AI Internship — Task 01</div>
+<h1>Language<br><span>Translation</span></h1>
+<p class="sub">Free · No API Key · 12 Languages</p>
+
+<div class="controls">
+  <select id="src">
+    <option value="en">English</option>
+    <option value="fr">French</option>
+    <option value="es">Spanish</option>
+    <option value="ar">Arabic</option>
+    <option value="de">German</option>
+    <option value="pt">Portuguese</option>
+    <option value="zh">Chinese</option>
+    <option value="ja">Japanese</option>
+    <option value="hi">Hindi</option>
+    <option value="ru">Russian</option>
+    <option value="it">Italian</option>
+    <option value="sw">Swahili</option>
+  </select>
+  <button class="swap" onclick="swapLangs()">⇄</button>
+  <select id="tgt">
+    <option value="fr">French</option>
+    <option value="en">English</option>
+    <option value="es">Spanish</option>
+    <option value="ar">Arabic</option>
+    <option value="de">German</option>
+    <option value="pt">Portuguese</option>
+    <option value="zh">Chinese</option>
+    <option value="ja">Japanese</option>
+    <option value="hi">Hindi</option>
+    <option value="ru">Russian</option>
+    <option value="it">Italian</option>
+    <option value="sw">Swahili</option>
+  </select>
+</div>
+
+<div class="panel">
+  <div class="ph"><span>Input</span></div>
+  <textarea id="inp" placeholder="Type text here..." oninput="document.getElementById('cc').textContent=this.value.length+' chars'"></textarea>
+</div>
+
+<div class="panel">
+  <div class="ph">
+    <span>Output</span>
+    <button class="copy-btn" onclick="doCopy()">Copy</button>
+  </div>
+  <div id="output">Translation will appear here...</div>
+</div>
+
+<div id="statusBox"></div>
+
+<div class="actions">
+  <span class="chars" id="cc">0 chars</span>
+  <button class="btn btn-g" onclick="doClear()">Clear</button>
+  <button class="btn btn-p" id="tbtn" onclick="doTranslate()">Translate</button>
+</div>
+
+<div class="divider"></div>
+<footer>CodeAlpha &nbsp;·&nbsp; Built by Dibbson &nbsp;·&nbsp; 2025</footer>
+<div class="toast" id="toast">Copied ✓</div>
+
+<script>
+function swapLangs(){
+  var s=document.getElementById('src'),t=document.getElementById('tgt'),tmp=s.value;
+  s.value=t.value; t.value=tmp;
+}
+
+function showStatus(msg,type){
+  var b=document.getElementById('statusBox');
+  b.textContent=msg; b.className=type==='err'?'err':'ok';
+}
+
+function hideStatus(){
+  document.getElementById('statusBox').className='';
+  document.getElementById('statusBox').style.display='none';
+}
+
+function fetchWithTimeout(url, ms){
+  return new Promise(function(resolve, reject){
+    var controller = new XMLHttpRequest();
+    var timer = setTimeout(function(){ controller.abort(); reject(new Error('Timeout after '+ms+'ms')); }, ms);
+    fetch(url).then(function(r){
+      clearTimeout(timer); resolve(r);
+    }).catch(function(e){
+      clearTimeout(timer); reject(e);
+    });
+  });
+}
+
+async function tryAPI1(text, src, tgt){
+  // MyMemory
+  var url='https://api.mymemory.translated.net/get?q='+encodeURIComponent(text)+'&langpair='+src+'|'+tgt;
+  var res=await fetch(url);
+  var data=await res.json();
+  if(data.responseStatus===200 && data.responseData && data.responseData.translatedText){
+    return data.responseData.translatedText;
+  }
+  throw new Error('MyMemory: '+JSON.stringify(data.responseStatus));
+}
+
+async function tryAPI2(text, src, tgt){
+  // corsproxy.io + MyMemory
+  var inner='https://api.mymemory.translated.net/get?q='+encodeURIComponent(text)+'&langpair='+src+'|'+tgt;
+  var url='https://corsproxy.io/?'+encodeURIComponent(inner);
+  var res=await fetch(url);
+  var data=await res.json();
+  if(data.responseStatus===200 && data.responseData && data.responseData.translatedText){
+    return data.responseData.translatedText;
+  }
+  throw new Error('Proxy: '+JSON.stringify(data.responseStatus));
+}
+
+async function tryAPI3(text, src, tgt){
+  // allorigins + MyMemory
+  var inner='https://api.mymemory.translated.net/get?q='+encodeURIComponent(text)+'&langpair='+src+'|'+tgt;
+  var url='https://api.allorigins.win/get?url='+encodeURIComponent(inner);
+  var res=await fetch(url);
+  var wrapper=await res.json();
+  var data=JSON.parse(wrapper.contents);
+  if(data.responseStatus===200 && data.responseData && data.responseData.translatedText){
+    return data.responseData.translatedText;
+  }
+  throw new Error('AllOrigins: '+JSON.stringify(data.responseStatus));
+}
+
+async function doTranslate(){
+  var input=document.getElementById('inp').value.trim();
+  if(!input){ showStatus('Please enter some text.','err'); return; }
+  var src=document.getElementById('src').value;
+  var tgt=document.getElementById('tgt').value;
+  if(src===tgt){ showStatus('Source and target must be different.','err'); return; }
+
+  var btn=document.getElementById('tbtn');
+  var out=document.getElementById('output');
+  btn.disabled=true; btn.textContent='Translating...';
+  out.className=''; out.innerHTML='<div class="dots"><span></span><span></span><span></span></div>';
+  hideStatus();
+
+  var result=null;
+  var errors=[];
+
+  try{ result=await tryAPI1(input,src,tgt); }
+  catch(e){ errors.push('Engine 1: '+e.message); }
+
+  if(!result){
+    try{ result=await tryAPI2(input,src,tgt); }
+    catch(e){ errors.push('Engine 2: '+e.message); }
+  }
+
+  if(!result){
+    try{ result=await tryAPI3(input,src,tgt); }
+    catch(e){ errors.push('Engine 3: '+e.message); }
+  }
+
+  btn.disabled=false; btn.textContent='Translate';
+
+  if(result){
+    out.textContent=result; out.className='filled';
+    hideStatus();
+  } else {
+    out.textContent='Translation will appear here...'; out.className='';
+    showStatus('All engines failed. Check your internet.\n'+errors.join(' | '),'err');
+  }
+}
+
+function doClear(){
+  document.getElementById('inp').value='';
+  var o=document.getElementById('output');
+  o.textContent='Translation will appear here...'; o.className='';
+  document.getElementById('cc').textContent='0 chars';
+  hideStatus();
+}
+
+function doCopy(){
+  var o=document.getElementById('output');
+  if(!o.classList.contains('filled')) return;
+  if(navigator.clipboard){
+    navigator.clipboard.writeText(o.textContent).then(function(){showToast();});
+  } else {
+    var ta=document.createElement('textarea');
+    ta.value=o.textContent;
+    document.body.appendChild(ta); ta.select();
+    document.execCommand('copy'); document.body.removeChild(ta);
+    showToast();
+  }
+}
+
+function showToast(){
+  var t=document.getElementById('toast');
+  t.classList.add('show'); setTimeout(function(){ t.classList.remove('show'); },2000);
+}
+</script>
+</body>
+</html>
